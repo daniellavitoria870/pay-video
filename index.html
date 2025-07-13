@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uma Apresentação Especial Para Você</title>
+
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 450px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 20px 16px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .headline {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 177.77%; /* Proporção 9:16 para vídeo vertical */
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: 0;
+        }
+        .progress-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.25);
+            z-index: 4; /* Abaixo do overlay */
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #e50914;
+            transition: width 0.1s linear;
+        }
+        #resume-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(164, 13, 19, 0.95);
+            display: none; /* Inicia oculto */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0; /* Inicia transparente */
+        }
+        .resume-content p {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .resume-options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        .resume-button {
+            width: 90%;
+            max-width: 300px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 2px solid #fff;
+            background: none;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .icon {
+            font-size: 20px;
+        }
+        #cta-button {
+            background-color: #28a745;
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            text-decoration: none;
+            margin-top: 25px;
+            width: 100%;
+            box-sizing: border-box;
+            display: none; /* Inicia oculto */
+        }
+        .comments-section {
+            margin-top: 30px;
+        }
+        .comments-section img {
+            width: 100%;
+            border-radius: 12px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="headline">Assista à apresentação especial abaixo para descobrir o segredo:</h1>
+
+        <div class="video-container">
+            <iframe
+                id="vsl-player"
+                src="https://player.vimeo.com/video/1100941593?autoplay=0&controls=0&dnt=1"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="video-progress"></div>
+            </div>
+
+            <div id="resume-overlay">
+                <div class="resume-content">
+                    <p>Você já começou a assistir esse vídeo</p>
+                    <div class="resume-options">
+                        <button id="continue-btn" class="resume-button">
+                            <span class="icon">▶</span> Continuar assistindo
+                        </button>
+                        <button id="restart-btn" class="resume-button">
+                            <span class="icon">↺</span> Assistir do início
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a id="cta-button" href="https://go.tribopay.com.br/xwfckg6s4r">
+            SIM, QUERO MEU ACESSO!
+        </a>
+
+        <div class="comments-section">
+            <img src="images/feedbackvideopay.png" alt="Comentários de clientes satisfeitos" />
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURAÇÃO ---
+            const videoIdVimeo = '1100941593'; // ID do seu vídeo do Vimeo
+            const videoIdStorageKey = `vimeoProgresso_${videoIdVimeo}`;
+            const porcentagemParaAparecerCTA = 50; // CTA aparece em 50%
+
+            // --- ELEMENTOS DO HTML ---
+            const iframe = document.getElementById('vsl-player');
+            const player = new Vimeo.Player(iframe);
+            const ctaButton = document.getElementById('cta-button');
+            const resumeOverlay = document.getElementById('resume-overlay');
+            const continueBtn = document.getElementById('continue-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const progressBar = document.getElementById('video-progress');
+
+            let isButtonVisible = false;
+
+            // --- FUNÇÕES ---
+
+            // Mostra a tela de "Continuar assistindo"
+            function showResumeOverlay() {
+                resumeOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    resumeOverlay.style.opacity = '1';
+                }, 10); // Pequeno delay para garantir a transição
+            }
+
+            // Esconde a tela de "Continuar assistindo"
+            function hideResumeOverlay() {
+                resumeOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    resumeOverlay.style.display = 'none';
+                }, 500); // Espera a transição terminar
+            }
+
+            // Inicia o vídeo a partir de um tempo específico
+            function startPlayback(time = 0) {
+                player.setCurrentTime(time).then(() => {
+                    player.play().catch(error => console.error("Erro ao dar play no vídeo:", error));
+                }).catch(error => console.error('Erro ao definir o tempo do vídeo:', error));
+                hideResumeOverlay();
+            }
+
+            // --- LÓGICA PRINCIPAL ---
+
+            player.ready().then(() => {
+                const savedTime = localStorage.getItem(videoIdStorageKey);
+                
+                // Se houver tempo salvo maior que 5 segundos, mostra o overlay
+                if (savedTime && parseFloat(savedTime) > 5) {
+                    showResumeOverlay();
+                }
+
+                // Pausa o vídeo se ele começar a tocar automaticamente
+                player.getAutoplay().then(autoplay => {
+                    if (autoplay) {
+                        player.pause();
+                    }
+                });
+            });
+
+            // Ações dos botões do overlay
+            continueBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Impede que o clique se propague
+                const savedTime = localStorage.getItem(videoIdStorageKey) || 0;
+                startPlayback(parseFloat(savedTime));
+            });
+
+            restartBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                localStorage.removeItem(videoIdStorageKey);
+                startPlayback(0);
+            });
+
+            // Evento de progresso do vídeo
+            player.on('timeupdate', (data) => {
+                const { percent, seconds } = data;
+                const progresso = percent * 100;
+
+                // Salva o progresso no localStorage após 5 segundos
+                if (seconds > 5) {
+                    localStorage.setItem(videoIdStorageKey, seconds);
+                }
+
+                // Atualiza a barra de progresso
+                progressBar.style.width = `${progresso}%`;
+
+                // Mostra o botão CTA na porcentagem definida
+                if (progresso >= porcentagemParaAparecerCTA && !isButtonVisible) {
+                    ctaButton.style.display = 'block';
+                    isButtonVisible = true;
+                }
+            });
+
+            // Limpa o progresso quando o vídeo termina
+            player.on('ended', () => {
+                localStorage.removeItem(videoIdStorageKey);
+                // Mantém o CTA visível se já apareceu
+            });
+        });
+    </script>
+
+</body>
+</html>
