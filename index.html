@@ -167,7 +167,7 @@
         <div class="video-container">
             <iframe
                 id="vsl-player"
-                src="https://player.vimeo.com/video/1100941593?autoplay=1&controls=0&dnt=1&transparent=0"
+                src="https://player.vimeo.com/video/1100941593?autoplay=1&controls=0&dnt=1&transparent=0&muted=1"
                 allow="autoplay; fullscreen; picture-in-picture">
             </iframe>
 
@@ -239,7 +239,7 @@
                         if (paused) {
                             player.getCurrentTime().then(currentTime => startPlayback(currentTime));
                         } else {
-                            player.play();
+                            player.pause();
                         }
                     });
                 }
